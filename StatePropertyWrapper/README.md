@@ -7,10 +7,10 @@
         Passing state value to child view - If you pass state property to child view, SwiftUI updates the child any time the value changes in the parent but child can't modify the value.
         To enable the child view to modify the stored value pass a `Binding`. We can cover this in next topic.
         
-    [![Alt text](text )](https://github.com/shridharmalimca/SwiftUI/blob/main/StatePropertyWrapper/Simulator%20Screen%20Shot%20-%20iPhone%2014%20Pro%20-%202022-12-22%20at%2012.10.10.png)
+    [Initial Value](initialValue.png)
     
-    [](/Users/macbook/Documents/Git_Repos/SwiftUI/StatePropertyWrapper/Simulator Screen Shot - iPhone 14 Pro - 2022-12-22 at 12.10.13.png)
-
+    [After changes](afterChange.png)
+    
 - **@Binding**:
 
 

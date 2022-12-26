@@ -1,14 +1,14 @@
 //
-//  NavigationListApp.swift
-//  NavigationList
+//  ViewBuilderApp.swift
+//  ViewBuilder
 //
-//  Created by Macbook on 16/12/22.
+//  Created by Macbook on 26/12/22.
 //
 
 import SwiftUI
 
 @main
-struct NavigationListApp: App {
+struct ViewBuilderApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

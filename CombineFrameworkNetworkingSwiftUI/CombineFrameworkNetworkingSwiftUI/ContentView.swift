@@ -7,51 +7,78 @@
 
 import SwiftUI
 import Combine
-enum RequestError: Error {
-    case invalidUrl
-    case invalidRequest
-    case invalidResponse
+
+struct Posts: Identifiable, Codable {
+    let userID, id: Int
+       let title, body: String
+
+       enum CodingKeys: String, CodingKey {
+           case userID = "userId"
+           case id, title, body
+       }
 }
 
-enum HttpMethod: String {
-    case POST = "POST"
-    case GET = "GET"
-}
-
-struct APIProvider {
-    static let baseUrl = ""
-    static let getPosts = ""
-}
-
-protocol APIHandlerProtocol: AnyObject {
-    func fetch<T: Decodable>(requestUrl: String, requestMethod: HttpMethod, requestType: T.Type, completion: AnyPublisher<T, RequestError>)
-}
-
-final class APIHandlerService: APIHandlerProtocol {
-    func fetch<T: Decodable>(requestUrl: String, requestMethod: HttpMethod, requestType: T.Type, completion: AnyPublisher<T, RequestError>) {
-        guard let url = URL(string: requestUrl) else { return }
-        /*let task: AnyCancellable = URLSession.shared.dataTaskPublisher(for: url)
-            .map { $0.data }
-            .decode(type: T.self, decoder: JSONDecoder)
-            .replaceNil(with: T)*/
+final class PostsViewModel: ObservableObject {
+    @Published var posts: [Posts] = []
+    var cancellable = Set<AnyCancellable>()
+    init() {
         
-            
-            
     }
     
+    func getPosts() {
+        guard let url = URL(string: "https://jsonplaceholder.typicode.com/posts") else { return }
+        
+        URLSession.shared.dataTaskPublisher(for: url)
+            .subscribe(on: DispatchQueue.global(qos: .background))
+            .receive(on: DispatchQueue.main)
+            .tryMap(handleOutput)
+            .decode(type: [Posts].self, decoder: JSONDecoder())
+            .sink { completion in
+                print("COMPLETION: \(completion)")
+            } receiveValue: { [weak self] posts in
+                self?.posts = posts
+            }
+            .store(in: &cancellable)
+    }
     
+    func handleOutput(output: URLSession.DataTaskPublisher.Output) throws -> Data {
+        guard let response = output.response as? HTTPURLResponse,
+              response.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        
+        return output.data
+    }
 }
 
 
 struct ContentView: View {
+    @StateObject var vm: PostsViewModel = PostsViewModel()
+    @State var serachtext: String = ""
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+        NavigationStack {
+            List(searchResult) { post in
+                VStack(alignment: .leading) {
+                    Text(post.title)
+                        .font(.title)
+                    Text(post.body)
+                        .font(.subheadline)
+                }
+            }
+            .onAppear {
+                vm.getPosts()
+            }
+            .navigationTitle("Posts")
+            .searchable(text: $serachtext)
         }
-        .padding()
+    }
+    
+    var searchResult: [Posts] {
+        if serachtext.isEmpty {
+            return vm.posts
+        } else {
+            return vm.posts.filter { $0.title.localizedCaseInsensitiveContains(serachtext)}
+        }
     }
 }
 
